@@ -54,3 +54,4 @@ dkms.conf
 # Others
 particle_finder
 particles.csv
+results.txt

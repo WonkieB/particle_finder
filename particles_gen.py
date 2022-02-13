@@ -1,8 +1,10 @@
 import csv  
 import random
 
-range_min = -100.0
-range_max = 100.0
+range_min = -1000000.0
+range_max = 1000000.0
+num_of_parts = 10000000
+csv_path = "particles.csv"
 
 def randomize():
     return random.uniform(range_min, range_max)
@@ -23,8 +25,5 @@ def particles_gen(num_of_parts, csv_path):
         
         
 if __name__ == "__main__":
-    num_of_parts = 10000
-    csv_path = "particles.csv"
-    
     particles_gen(num_of_parts, csv_path)
     
