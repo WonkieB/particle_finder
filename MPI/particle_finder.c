@@ -1,4 +1,6 @@
 #include "particle_finder.h"
+   
+int glob_c = 0;
 
 int main(int argc, char** argv ){
     Point start = {.x=0.0, .y=0.0, .z=0.0};
@@ -12,12 +14,14 @@ int main(int argc, char** argv ){
     //read_file(in_path);
     int i;
     int loc_c = 0;
-    int glob_c = 0;
+
     start_time();
     if(rank !=0){
-	for( i = rank - 1; i < NUM_PARTS; i += size - 1){
-		 find_neighbours(start, 100000.5, i);
-		}
+        num_of_results = 0;
+        for( i = rank - 1; i < NUM_PARTS; i += size - 1){
+            find_neighbours(start, 100000.5, i);
+            }
+        loc_c = num_of_results;
     }
     MPI_Reduce(&loc_c, &glob_c, 1, MPI_INT, MPI_SUM, 0,  MPI_COMM_WORLD);
     MPI_Finalize();
@@ -37,8 +41,6 @@ float calc_distance(Point A, Point B){
 
 // find all particles at a given distance from the starting point
 void find_neighbours(Point start, float distance, int index ){
-    num_of_results = 0;
-       	
     if(calc_distance(particles[index], start) < distance){
          results[num_of_results] = particles[index];
          num_of_results++;
@@ -84,11 +86,11 @@ void read_file(const char* path){
 void save_results(const char *path){
     FILE *results_f;
     results_f = fopen(path,"w");
-    for(size_t i=0; i < num_of_results; i++){
+    for(size_t i=0; i < glob_c; i++){
         char result[MAXLENGTH]; 
         sprintf(result,"Result %li: x=%f, y=%f, z=%f\n", i+1, results[i].x, results[i].y, results[i].z);
         fputs(result, results_f);
     }
     fclose(results_f);
-    printf("Found %li neighbours.\n", num_of_results);
+    printf("Found %li neighbours.\n", glob_c);
 }
