@@ -1,6 +1,7 @@
 #include "particle_finder.h"
    
 int glob_c = 0;
+static CollectiveMutex      mutex;
 
 int main(int argc, char** argv ){
     Point start = {.x=0.0, .y=0.0, .z=0.0};
@@ -8,7 +9,7 @@ int main(int argc, char** argv ){
     MPI_Init(&argc, &argv); // aby z konsoli przyjal procesy
     MPI_Comm_size( MPI_COMM_WORLD, &size); // z inita do tej zmiennej zapisze
     MPI_Comm_rank( MPI_COMM_WORLD, &rank); // wskaznik na numer watku
-    printf("HELLO. I am %d out of %d ... \n", rank, size);
+    //printf("HELLO. I am %d out of %d ... \n", rank, size);
   
     //Point start = {.x=0.0, .y=0.0, .z=0.0};
     //read_file(in_path);
@@ -22,13 +23,19 @@ int main(int argc, char** argv ){
             find_neighbours(start, 100000.5, i);
             }
         loc_c = num_of_results;
+        CollectiveMutex::ScopedLock lock(mutex, comm);
+        
+        //printf("Hello, from %i \n", rank);
     }
     MPI_Reduce(&loc_c, &glob_c, 1, MPI_INT, MPI_SUM, 0,  MPI_COMM_WORLD);
+    if(rank == 0){
+      	save_results(out_path);
+      	stop_time();
+      	print_time("MPI elapsed in ");
+    }
     MPI_Finalize();
-    stop_time();
-    save_results(out_path);
+
     
-    print_time("MPI elapsed in ");
     return 0;
 }
 
@@ -44,7 +51,8 @@ void find_neighbours(Point start, float distance, int index ){
     if(calc_distance(particles[index], start) < distance){
          results[num_of_results] = particles[index];
          num_of_results++;
-         }    
+         }
+             
 }
 
 // read input data from file and store in particles array
@@ -92,5 +100,5 @@ void save_results(const char *path){
         fputs(result, results_f);
     }
     fclose(results_f);
-    printf("Found %li neighbours.\n", glob_c);
+    printf("Found %i neighbours.\n", glob_c);
 }
