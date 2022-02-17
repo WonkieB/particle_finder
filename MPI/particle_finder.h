@@ -20,7 +20,9 @@ typedef struct {
     float z;
 } Point;
 
-Point particles[NUM_PARTS];
+float particles_x[NUM_PARTS];
+float particles_y[NUM_PARTS];
+float particles_z[NUM_PARTS];
 Point results[NUM_PARTS];
 size_t num_of_results;
 int size, rank;
