@@ -1,7 +1,6 @@
 #include "particle_finder.h"
    
 int glob_c = 0;
-static CollectiveMutex      mutex;
 
 int main(int argc, char** argv ){
     Point start = {.x=0.0, .y=0.0, .z=0.0};
@@ -23,7 +22,6 @@ int main(int argc, char** argv ){
             find_neighbours(start, 100000.5, i);
             }
         loc_c = num_of_results;
-        CollectiveMutex::ScopedLock lock(mutex, comm);
         
         //printf("Hello, from %i \n", rank);
     }

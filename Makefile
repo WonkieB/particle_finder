@@ -4,7 +4,7 @@ OPENMP_DIR = OpenMP
 CUDA_DIR = CUDA
 
 .PHONY: all
-all: single openmp
+all: single openmp mpi
 
 .PHONY: single
 single: comp_single run_single
@@ -26,13 +26,25 @@ openmp: comp_openmp run_openmp
 comp_openmp: $(OPENMP_DIR)/particle_finder 
 	
 $(OPENMP_DIR)/particle_finder:
-	cd $(OPENMP_DIR); icc -qopenmp particle_finder.c my_timers.c -o particle_finder
+	cd $(OPENMP_DIR); gcc -fopenmp particle_finder.c my_timers.c -o particle_finder -lm
 
 .PHONY: run_openmp
 run_openmp: particles.csv
 	@cd $(OPENMP_DIR); ./particle_finder
 
+.PHONY: mpi
+mpi: comp_mpi run_mpi
 
+.PHONY: comp_mpi
+comp_mpi: $(OPENMP_DIR)/particle_finder 
+	
+$(MPI_DIR)/particle_finder:
+	cd $(MPI_DIR); mpicc particle_finder.c my_timers.c -o particle_finder -lm
+
+.PHONY: run_mpi
+run_mpi: particles.csv
+	@cd $(MPI_DIR); mpiexec -n 4 ./particle_finder
+	
 .PHONY: clean
 clean:
 	rm */particle_finder *.csv
