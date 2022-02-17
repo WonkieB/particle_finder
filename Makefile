@@ -36,14 +36,14 @@ run_openmp: particles.csv
 mpi: comp_mpi run_mpi
 
 .PHONY: comp_mpi
-comp_mpi: $(OPENMP_DIR)/particle_finder 
+comp_mpi: $(MPI_DIR)/particle_finder 
 	
 $(MPI_DIR)/particle_finder:
 	cd $(MPI_DIR); mpicc particle_finder.c my_timers.c -o particle_finder -lm
 
 .PHONY: run_mpi
 run_mpi: particles.csv
-	@cd $(MPI_DIR); mpiexec -n 4 ./particle_finder
+	@cd $(MPI_DIR); mpiexec --use-hwthread-cpus -np 4 ./particle_finder
 	
 .PHONY: clean
 clean:
